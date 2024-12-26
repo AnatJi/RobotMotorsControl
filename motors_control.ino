@@ -4,6 +4,9 @@ const int motorABackward = 10;
 const int motorBForward = 11;
 const int motorBBackward = 12;
 
+const int accelerationDelay = 10; // Задержка между изменениями скорости
+const int maxSpeed = 255; // Максимальная скорость (ШИМ значение)
+
 void setup() {
   // Настройка пинов как выходы
   pinMode(motorAForward, OUTPUT);
@@ -12,25 +15,38 @@ void setup() {
   pinMode(motorBBackward, OUTPUT);
 }
 
+void accelerateMotors(int pinForward, int pinBackward, int targetSpeed) {
+  // Увеличение скорости до targetSpeed
+  for (int speed = 0; speed <= targetSpeed; speed++) {
+    analogWrite(pinForward, speed);
+    analogWrite(pinBackward, LOW);  // Убедимся, что обратный мотор не работает
+    delay(accelerationDelay);
+  }
+}
+
+void decelerateMotors(int pinForward, int pinBackward) {
+  // Плавное торможение
+  for (int speed = maxSpeed; speed >= 0; speed--) {
+    analogWrite(pinForward, speed);
+    analogWrite(pinBackward, LOW);
+    delay(accelerationDelay);
+  }
+}
+
 void loop() {
   // Вперёд
-  digitalWrite(motorAForward, HIGH);
-  digitalWrite(motorBForward, HIGH);
+  accelerateMotors(motorAForward, motorABackward, maxSpeed);
   delay(2000); // Двигаемся вперёд 2 секунды
 
-  // Пауза
-  digitalWrite(motorAForward, LOW);
-  digitalWrite(motorBForward, LOW);
+  // Торможение
+  decelerateMotors(motorAForward, motorABackward);
   delay(1000); // Пауза 1 секунда
 
   // Назад
-  digitalWrite(motorABackward, HIGH);
-  digitalWrite(motorBBackward, HIGH);
+  accelerateMotors(motorABackward, motorAForward, maxSpeed);
   delay(2000); // Двигаемся назад 2 секунды
 
-  // Пауза
-  digitalWrite(motorABackward, LOW);
-  digitalWrite(motorBBackward, LOW);
+  // Торможение
+  decelerateMotors(motorABackward, motorAForward);
   delay(1000); // Пауза 1 секунда
 }
-
